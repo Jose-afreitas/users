@@ -1,9 +1,36 @@
 class UserController {
 
-    constructor(formId, tableId) {
-        this.formEl = document.getElementById(formId);
+    constructor(formIdCreate, formIdUpdate, tableId) {
+        this.formEl = document.getElementById(formIdCreate);
+        this.formUpdateEl = document.getElementById(formIdUpdate);
         this.tableEl = document.getElementById(tableId);
-        this.onSubmit()
+        this.onSubmit();
+        this.onEdit();
+    }
+
+    onEdit() {
+
+        document.querySelector("#box-user-update .btn-cancel").addEventListener("click", e => {
+            this.showPanelCreate();
+        });
+
+        this.formUpdateEl.addEventListener("submit", event => {
+
+            event.preventDefault();
+            let btn = this.formUpdateEl.querySelector("[type=submit]");
+            btn.disable = true;
+
+            let values = this.getValues(this.formUpdateEl);
+
+            console.log("passando", values)
+
+
+            let index = this.formUpdateEl.form.dataset.trIndex;
+            let tr = this.tableEl.rows[index];
+            this.tableEl.rows[index].dataset.user = JSON.stringify(values);
+
+
+        });
     }
 
     onSubmit() {
@@ -14,7 +41,7 @@ class UserController {
             let btn = this.formEl.querySelector("[type=submit]");
             btn.disable = true;
 
-            let values = this.getValues();
+            let values = this.getValues(this.formEl);
 
             if (!values) return false;
 
@@ -54,21 +81,19 @@ class UserController {
             } else {
                 resolve('dist/img/boxed-bg.jpg');
             }
-
         });
     };
 
-    getValues() {
+    getValues(formEl) {
         let user = {};
         let isValid = true;
 
-       /*Spread ->*/[...this.formEl.elements].forEach(function (field, index) {
+       /*Spread ->*/[...formEl.elements].forEach(function (field, index) {
 
             if (['name', 'email', 'password'].indexOf(field.name) > -1 && !field.value) {
 
                 field.parentElement.classList.add('has-error');
                 isValid = false;
-
             }
             if (field.name === "gender") {
                 if (field.checked) {
@@ -101,10 +126,7 @@ class UserController {
     addLine(dataUser) {
 
         let tr = document.createElement('tr');
-
         tr.dataset.user = JSON.stringify(dataUser);
-
-
 
         tr.innerHTML = `
         <tr>
@@ -122,13 +144,51 @@ class UserController {
 
         tr.querySelector(".btn-edit").addEventListener("click", e => {
 
-            console.log(JSON.parse(tr.dataset.user))
+            let json = JSON.parse(tr.dataset.user);
+            let form = document.querySelector("#form-user-update");
 
+            form.dataset.trIndex = tr.sectionRowIndex;
+
+            for (let name in json) {
+                let field = form.querySelector("[name=" + name.replace("_", "") + "]");
+
+                if (field) {
+                    switch (field.type) {
+                        case 'file': continue;
+                            break;
+
+                        case 'radio':
+                            field = form.querySelector("[name=" + name.replace("_", "") + "][value= " + json[name] + "]");
+                            field.checked = true;
+                            break;
+
+                        case 'checkbox':
+                            field.checked = json[name];
+                            break;
+                        default: field.value = json[name];
+                    }
+                }
+            }
+            this.showPanelUpdate();
         });
 
         this.tableEl.appendChild(tr)
 
         this.updateCount()
+    }
+
+    showPanelCreate() {
+
+        document.querySelector("#box-user-create").style.display = "block";
+        document.querySelector("#box-user-update").style.display = "none";
+
+    }
+
+    showPanelUpdate() {
+
+        document.querySelector("#box-user-create").style.display = "none";
+        document.querySelector("#box-user-update").style.display = "block";
+
     }
 
     updateCount() {
