@@ -94,15 +94,26 @@ class User {
                 }
                 return u;
             });
-
         } else {
             this._id = this.getNewID();
 
             users.push(this);
         }
         localStorage.setItem("users", JSON.stringify(users));
-
     }
+    // removendo um usuário do localStorege
+    remove() {
+        let users = User.getUsersStorage();
+
+        users.forEach((userData, index) => {
+            if (this._id == userData._id) {
+                users.splice(index, 1);
+            }
+        });
+
+        localStorage.setItem("users", JSON.stringify(users));
+    }
+
 
 
 }
