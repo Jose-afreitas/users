@@ -76,10 +76,16 @@ class User {
     }
 
     getNewID() {
-        if (!window.id) window.id = 0;
 
-        id++;
-        return id;
+        let usersID = parseInt(localStorage.getItem("usersID"))
+
+        if (!usersID> 0 ) usersID = 0;
+        
+        usersID++;
+
+        localStorage.setItem("usersID", usersID);
+
+        return usersID;
     }
 
     save() {
@@ -101,19 +107,21 @@ class User {
         }
         localStorage.setItem("users", JSON.stringify(users));
     }
+
     // removendo um usuário do localStorege
-    remove() {
+    deletUser() {
+
         let users = User.getUsersStorage();
 
         users.forEach((userData, index) => {
             if (this._id == userData._id) {
+                //splice -altera o conteúdo de uma lista, adicionando novos elementos enquanto remove elementos antigos.
                 users.splice(index, 1);
             }
         });
 
         localStorage.setItem("users", JSON.stringify(users));
     }
-
 
 
 }
